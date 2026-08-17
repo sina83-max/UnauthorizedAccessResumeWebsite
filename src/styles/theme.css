@@ -14,8 +14,8 @@
   --color-border: var(--border);
   --color-ring: var(--ring);
 
-  --font-sans: "Inter", sans-serif;
-  --font-mono: "Fira Code", monospace;
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -23,36 +23,36 @@
 }
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #121214;
-  --card-foreground: #fafafa;
-  --primary: #4ade80; /* Terminal Green */
-  --primary-foreground: #09090b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #4ade80; /* Terminal Green */
-  --accent-foreground: #09090b;
-  --border: #27272a;
-  --ring: #4ade80;
-  --radius: 0.5rem;
+  --background: #f1f3f9;
+  --foreground: #0f172a;
+  --card: rgba(255, 255, 255, 0.75);
+  --card-foreground: #0f172a;
+  --primary: #007aff; /* macOS Accent Blue */
+  --primary-foreground: #ffffff;
+  --secondary: rgba(230, 235, 245, 0.6);
+  --secondary-foreground: #1e293b;
+  --muted: rgba(226, 232, 240, 0.5);
+  --muted-foreground: #64748b;
+  --accent: #007aff;
+  --accent-foreground: #ffffff;
+  --border: rgba(203, 213, 225, 0.5);
+  --ring: #007aff;
+  --radius: 0.875rem;
 }
 
 .dark {
-  --background: #050505;
-  --foreground: #f4f4f5;
-  --card: #0d0d0f;
-  --card-foreground: #f4f4f5;
-  --primary: #4ade80; /* Terminal Green */
-  --primary-foreground: #050505;
-  --secondary: #1f1f22;
-  --secondary-foreground: #f4f4f5;
-  --muted: #1f1f22;
-  --muted-foreground: #a1a1aa;
-  --accent: #4ade80; /* Terminal Green */
-  --accent-foreground: #050505;
-  --border: #27272a;
-  --ring: #4ade80;
+  --background: #090d16;
+  --foreground: #f8fafc;
+  --card: rgba(18, 24, 38, 0.72);
+  --card-foreground: #f8fafc;
+  --primary: #0a84ff; /* macOS Dark Blue Accent */
+  --primary-foreground: #ffffff;
+  --secondary: rgba(30, 41, 59, 0.6);
+  --secondary-foreground: #f1f5f9;
+  --muted: rgba(30, 41, 59, 0.5);
+  --muted-foreground: #94a3b8;
+  --accent: #0a84ff;
+  --accent-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.12);
+  --ring: #0a84ff;
 }
