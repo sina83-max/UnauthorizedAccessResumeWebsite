@@ -14,7 +14,12 @@ import (
 
 // Seed populate the db with initial data
 func Seed() {
-
+	seedAdmin()
+	seedResumeSections()
+	seedSiteSettings()
+	seedBlogCategories()
+	seedBlogPosts()
+	log.Println("✓ Seed completed")
 }
 
 func seedAdmin() {

@@ -47,252 +47,8 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { format } from 'date-fns';
-
-// --- DATA STRUCTURE & FILE SYSTEM ---
-
-type FileType = 'folder' | 'markdown' | 'pdf' | 'json' | 'vcf' | 'code';
-
-interface FileNode {
-  id: string;
-  name: string;
-  type: FileType;
-  size?: string;
-  date?: string;
-  content?: string;
-  category?: string;
-  isRestricted?: boolean;
-  children?: FileNode[];
-  downloadName?: string;
-}
-
-const INITIAL_FILE_SYSTEM: FileNode = {
-  id: 'root',
-  name: 'Sina\'s Remote Mac',
-  type: 'folder',
-  children: [
-    {
-      id: 'personal',
-      name: 'Personal',
-      type: 'folder',
-      children: [
-        {
-          id: 'resume',
-          name: 'resume.pdf',
-          type: 'pdf',
-          size: '1.4 MB',
-          date: 'May 12, 2026',
-          downloadName: 'Alex_Developer_Resume.pdf',
-          content: 'Resume content placeholder'
-        },
-        {
-          id: 'skills',
-          name: 'skills.json',
-          type: 'json',
-          size: '3.2 KB',
-          date: 'May 10, 2026',
-          content: JSON.stringify(
-            {
-              developer: {
-                name: 'Alex Chen',
-                role: 'Senior Full-Stack & UI Engineer',
-                location: 'San Francisco, CA',
-                status: 'Available for Select Projects'
-              },
-              primaryLanguages: ['TypeScript', 'JavaScript', 'Python', 'Rust', 'HTML/CSS'],
-              frontendStack: {
-                core: ['React 18+', 'Next.js', 'Vite', 'Vue.js'],
-                styling: ['Tailwind CSS', 'CSS Modules', 'Shadcn UI', 'Framer Motion'],
-                state: ['Zustand', 'TanStack Query', 'Redux Toolkit']
-              },
-              backendStack: {
-                runtime: ['Node.js', 'Bun', 'Python / FastAPI'],
-                databases: ['PostgreSQL', 'Supabase', 'Redis', 'MongoDB'],
-                cloud: ['AWS (Lambda, S3, CloudFront)', 'Vercel', 'Docker', 'Cloudflare']
-              },
-              engineeringPractices: [
-                'Component Architecture & Design Systems',
-                'Performance Optimization & Web Vitals',
-                'CI/CD & Automated Testing (Vitest, Playwright)',
-                'Responsive & Accessible (a11y) UI Design'
-              ]
-            },
-            null,
-            2
-          )
-        },
-        {
-          id: 'projects',
-          name: 'projects.md',
-          type: 'markdown',
-          size: '8.5 KB',
-          date: 'May 14, 2026',
-          content: `# Featured Engineering Projects
-
-## 1. Tahoe Glass Design System
-*An ultra-modern, GPU-accelerated web component library inspired by macOS Tahoe translucency.*
-- **Tech Stack:** React, Tailwind CSS, WebGL Shaders, Motion
-- **Highlights:** Built zero-runtime glassmorphism primitives, custom light physics engine, used by over 12k developers.
-- **Key Metrics:** 60fps render loops across low-power mobile viewports.
-
----
-
-## 2. Remote Machine CLI & Protocol
-*Sub-10ms web terminal and remote workspace connection protocol.*
-- **Tech Stack:** Rust, WebSockets, WebAssembly, Xterm.js
-- **Highlights:** Bi-directional SSH encryption, real-time file tree synchronization, remote session persistence.
-- **Impact:** Reduced dev environment boot time from 45 seconds to 1.2 seconds.
-
----
-
-## 3. SynthFlow AI Visual Canvas
-*Node-based generative UI layout canvas with live code generation.*
-- **Tech Stack:** React, TypeScript, Canvas API, OpenAI GPT-4 Vision
-- **Highlights:** Instant Figma-to-Code mapping, interactive component playground, real-time collaborative editing.
-
----
-
-## 4. Quantum Metrics Analytics
-*Privacy-first event analytics platform built for high-throughput edge nodes.*
-- **Tech Stack:** Go, ClickHouse, Apache Kafka, React Dashboard
-- **Highlights:** Handled 500M daily events with <20MB RAM footprint on edge workers.`
-        },
-        {
-          id: 'contact',
-          name: 'contact.vcf',
-          type: 'vcf',
-          size: '1.1 KB',
-          date: 'May 15, 2026',
-          content: `BEGIN:VCARD
-VERSION:3.0
-FN:Alex Chen
-TITLE:Senior Software & UI Engineer
-EMAIL;TYPE=INTERNET,HOME:alex.chen.dev@example.com
-TEL;TYPE=CELL,VOICE:+1 (555) 382-9104
-ADR;TYPE=HOME:;;100 Innovation Way;San Francisco;CA;94105;USA
-URL:https://github.com/alexchen-dev
-NOTE:Connecting remote machines and building delightful visual experiences.
-END:VCARD`
-        }
-      ]
-    },
-    {
-      id: 'blog',
-      name: 'Blog',
-      type: 'folder',
-      children: [
-        {
-          id: 'engineering',
-          name: 'Engineering',
-          type: 'folder',
-          children: [
-            {
-              id: 'post-1',
-              name: 'building-liquid-glass-ui.md',
-              type: 'markdown',
-              size: '14.2 KB',
-              date: 'May 02, 2026',
-              category: 'Engineering',
-              content: `# Building Liquid Glass UIs at 60fps with WebGL and Backdrop Filters
-
-*Published on May 2, 2026 • 6 min read • Engineering*
-
-Modern web interfaces are evolving past flat minimal rectangles toward multi-layered, tactile glass surfaces that react dynamically to environment lighting. When designing the visual system for this macOS Finder portfolio, the challenge was delivering authentic liquid translucent depth without destroying GPU frame rates.
-
-## The Physics of Liquid Translucency
-
-True glassmorphism relies on three overlapping layer physics:
-1. **Backdrop Dispersion:** Blurring content beneath the surface with dynamic color saturation ("backdrop-filter: blur(24px) saturate(180%)").
-2. **Specular Border Highlights:** Thin 1px gradient hairlines that mimic refraction along window bevels.
-3. **Ambient Light Transmission:** Adapting glass tint dynamically based on the color sampling of background wallpapers.
-
-// React Liquid Glass Surface Hook
-export function useGlassRefraction(intensity = 0.8) {
-  const [lightAngle, setLightAngle] = useState(135);
-  
-  useEffect(() => {
-    const handlePointerMove = (e: MouseEvent) => {
-      const angle = Math.atan2(e.clientY - window.innerHeight/2, e.clientX - window.innerWidth/2);
-      setLightAngle(angle * (180 / Math.PI));
-    };
-    window.addEventListener('mousemove', handlePointerMove);
-    return () => window.removeEventListener('mousemove', handlePointerMove);
-  }, []);
-
-  return { lightAngle, glassStyle: { backdropFilter: 'blur(20px)' } };
-}
-
-## Lessons Learned in Performance
-- **Layer Isolation:** Always isolate glass surfaces into GPU layers using "will-change: transform" or "transform: translateZ(0)".
-- **Sub-pixel Anti-aliasing:** Use low-opacity "rgba(255,255,255,0.12)" borders in dark mode to prevent border aliasing during window drag transitions.
-- **Mobile Fallbacks:** Dynamically scale backdrop blur down to "blur(12px)" on touch devices to conserve battery.`
-            },
-            {
-              id: 'post-2',
-              name: 'distributed-state-remote-sessions.md',
-              type: 'markdown',
-              size: '18.7 KB',
-              date: 'Apr 18, 2026',
-              category: 'Engineering',
-              content: `# Architecting Real-time Remote Workspace Sessions
-
-*Published on April 18, 2026 • 8 min read • Engineering*
-
-When users connect to a web portfolio that pretends to be a remote machine server, maintaining the illusion requires subtle state syncing.
-
-## The Remote Connection Handshake
-
-1. **SMB/SSH Tunnel Negotiation:** Simulating authentication handshake latency with deterministic progress steps.
-2. **Generic File Node Trees:** Representing file systems as recursive data structures that support instantaneous path updates, Quick Look caching, and search indexing.
-
-> "A great user interface is an invisible contract between human expectation and digital physics."`
-            }
-          ]
-        },
-        {
-          id: 'notes',
-          name: 'Notes',
-          type: 'folder',
-          children: [
-            {
-              id: 'post-3',
-              name: 'crafting-meaningful-portfolios.md',
-              type: 'markdown',
-              size: '9.1 KB',
-              date: 'Mar 28, 2026',
-              category: 'Notes',
-              content: `# Beyond the Standard Grid: Why Interactive Metaphors Matter
-
-*Published on March 28, 2026 • 4 min read • Design Notes*
-
-Most developer portfolios look identical: a hero header with floating particle effects, three project cards, a list of skill pills, and a contact form.
-
-While clean, it misses an opportunity to show **how you think as a software creator**.
-
-By transforming a portfolio into a living macOS Finder environment connected to a remote machine, every interaction becomes a narrative step:
-- Opening "resume.pdf" triggers a Quick Look viewer.
-- Inspecting "skills.json" reveals actual structured data instead of static badges.
-- Reading a blog post feels like opening a document in macOS TextEdit.`
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'system-root',
-      name: 'System Root',
-      type: 'folder',
-      isRestricted: true,
-      children: []
-    },
-    {
-      id: 'network-trash',
-      name: 'Trash',
-      type: 'folder',
-      isRestricted: true,
-      children: []
-    }
-  ]
-};
+import { fetchPersonal, fetchCategories, fetchPostsByCategory } from '@/api/client';
+import { buildFileSystem, type FileNode, type FileType } from '@/api/buildFS';
 
 // Helper to flat search files
 function searchFiles(node: FileNode, query: string): FileNode[] {
@@ -308,6 +64,43 @@ function searchFiles(node: FileNode, query: string): FileNode[] {
     }
   }
   return results;
+}
+
+// --- DATA FETCHING ---
+
+function useFileSystem() {
+  const [fileSystem, setFileSystem] = useState<FileNode | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        const [personal, categories] = await Promise.all([
+          fetchPersonal(),
+          fetchCategories(),
+        ]);
+
+        const allPosts = [];
+        for (const cat of categories) {
+          const res = await fetchPostsByCategory(cat.slug);
+          allPosts.push(...res.posts);
+        }
+
+        const fs = buildFileSystem(personal, categories, allPosts);
+        setFileSystem(fs);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        setFetchError('Failed to connect to server');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  return { fileSystem, isLoading, fetchError };
 }
 
 // --- HELPER COMPONENTS ---
@@ -377,17 +170,24 @@ export default function App() {
     return hour < 7 || hour >= 19;
   });
 
+  // Fetch file system data from API
+  const { fileSystem, isLoading, fetchError } = useFileSystem();
+
   // File System State
-  const [currentPathNodes, setCurrentPathNodes] = useState<FileNode[]>(() => [
-    INITIAL_FILE_SYSTEM,
-    INITIAL_FILE_SYSTEM.children![0] // Start in "Personal"
-  ]);
+  const [currentPathNodes, setCurrentPathNodes] = useState<FileNode[]>([]);
   const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
   const [quickLookFile, setQuickLookFile] = useState<FileNode | null>(null);
   const [readingPost, setReadingPost] = useState<FileNode | null>(null);
   const [viewMode, setViewMode] = useState<'icon' | 'list' | 'column' | 'gallery'>('icon');
   const [searchQuery, setSearchQuery] = useState('');
   const [accessDeniedFolder, setAccessDeniedFolder] = useState<string | null>(null);
+
+  // Initialize path when fileSystem loads
+  useEffect(() => {
+    if (fileSystem) {
+      setCurrentPathNodes([fileSystem, fileSystem.children![0]]);
+    }
+  }, [fileSystem]);
 
   // Mobile viewport toggle / auto detect
   const [isMobileMode, setIsMobileMode] = useState(false);
@@ -473,11 +273,12 @@ export default function App() {
   };
 
   const handleSidebarSelect = (targetId: string) => {
+    if (!fileSystem) return;
     if (targetId === 'personal') {
-      setCurrentPathNodes([INITIAL_FILE_SYSTEM, INITIAL_FILE_SYSTEM.children![0]]);
+      setCurrentPathNodes([fileSystem, fileSystem.children![0]]);
       setSelectedFile(null);
     } else if (targetId === 'blog') {
-      setCurrentPathNodes([INITIAL_FILE_SYSTEM, INITIAL_FILE_SYSTEM.children![1]]);
+      setCurrentPathNodes([fileSystem, fileSystem.children![1]]);
       setSelectedFile(null);
     } else {
       setAccessDeniedFolder(targetId);
@@ -485,11 +286,40 @@ export default function App() {
   };
 
   const displayedFiles = useMemo(() => {
+    if (!fileSystem || currentPathNodes.length === 0) return [];
     if (searchQuery.trim()) {
-      return searchFiles(INITIAL_FILE_SYSTEM, searchQuery.trim());
+      return searchFiles(fileSystem, searchQuery.trim());
     }
-    return currentFolder.children || [];
-  }, [currentFolder, searchQuery]);
+    return currentFolder?.children || [];
+  }, [currentFolder, searchQuery, fileSystem, currentPathNodes.length]);
+
+  // Loading state
+  if (isLoading || !fileSystem || currentPathNodes.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-950">
+        <div className="text-sm text-muted-foreground animate-pulse">
+          Connecting to server...
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (fetchError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-950">
+        <div className="text-center space-y-2">
+          <p className="text-sm text-rose-500">{fetchError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs text-muted-foreground hover:text-primary underline"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen w-full select-none font-sans overflow-hidden transition-colors duration-500 ${isDarkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}`}>

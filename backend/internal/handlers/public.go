@@ -47,9 +47,9 @@ func GetPersonal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, http.StatusOK, map[string]interface{}{
-		"resume_section": sections,
-		"projects":       projects,
-		"settings":       settingsMap,
+		"resume_sections": sections,
+		"projects":        projects,
+		"settings":        settingsMap,
 	})
 }
 
