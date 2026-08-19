@@ -22,6 +22,49 @@ func uintParam(w http.ResponseWriter, r *http.Request, param string) (uint, bool
 	return uint(id), true
 }
 
+// ListResumeSections returns all resume sections.
+func ListResumeSections(w http.ResponseWriter, r *http.Request) {
+	var sections []models.ResumeSection
+	database.DB.Order("id").Find(&sections)
+	jsonResponse(w, http.StatusOK, sections)
+}
+
+// ListProjects returns all projects.
+func ListProjects(w http.ResponseWriter, r *http.Request) {
+	var projects []models.Project
+	database.DB.Order("sort_order, id").Find(&projects)
+	jsonResponse(w, http.StatusOK, projects)
+}
+
+// ListCategories returns all blog categories.
+func ListCategories(w http.ResponseWriter, r *http.Request) {
+	var categories []models.BlogCategory
+	database.DB.Order("id").Find(&categories)
+	jsonResponse(w, http.StatusOK, categories)
+}
+
+// ListPosts returns all blog posts (including soft-deleted for admin).
+func ListPosts(w http.ResponseWriter, r *http.Request) {
+	var posts []models.BlogPost
+	database.DB.Unscoped().Preload("Category").Order("id").Find(&posts)
+	jsonResponse(w, http.StatusOK, posts)
+}
+
+// DeleteCategory hard-deletes a blog category by ID.
+func DeleteCategory(w http.ResponseWriter, r *http.Request) {
+	id, ok := uintParam(w, r, "id")
+	if !ok {
+		return
+	}
+
+	result := database.DB.Delete(&models.BlogCategory{}, id)
+	if result.RowsAffected == 0 {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "category not found"})
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // UpdateResumeSection updates (or creates) a resume section by its key.
 // Uses upsert logic: try to find first, create if not found.
 func UpdateResumeSection(w http.ResponseWriter, r *http.Request) {

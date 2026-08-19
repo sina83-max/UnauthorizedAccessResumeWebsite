@@ -14,6 +14,7 @@ import (
 	"portfolio-api/internal/email"
 	"portfolio-api/internal/handlers"
 	chiMiddleware "portfolio-api/internal/middleware"
+	"portfolio-api/internal/storage"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -52,6 +53,9 @@ func main() {
 
 	// Create uploads directory if it doesn't exist
 	os.MkdirAll(config.C.UploadDir, 0755)
+
+	// Ensure Supabase Storage bucket exists (no-op if Supabase not configured)
+	storage.EnsureBucket()
 
 	// Build the router
 	r := chi.NewRouter()
@@ -93,18 +97,27 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Use(chiMiddleware.JWTAuth)
 
+		r.Get("/api/admin/resume-sections", handlers.ListResumeSections)
 		r.Put("/api/admin/resume-sections/{key}", handlers.UpdateResumeSection)
+		r.Get("/api/admin/projects", handlers.ListProjects)
 		r.Post("/api/admin/projects", handlers.CreateProject)
 		r.Put("/api/admin/projects/{id}", handlers.UpdateProject)
 		r.Delete("/api/admin/projects/{id}", handlers.DeleteProject)
+		r.Get("/api/admin/blog/categories", handlers.ListCategories)
 		r.Post("/api/admin/blog/categories", handlers.CreateCategory)
+		r.Delete("/api/admin/blog/categories/{id}", handlers.DeleteCategory)
+		r.Get("/api/admin/blog/posts", handlers.ListPosts)
 		r.Post("/api/admin/blog/posts", handlers.CreatePost)
 		r.Put("/api/admin/blog/posts/{id}", handlers.UpdatePost)
 		r.Delete("/api/admin/blog/posts/{id}", handlers.DeletePost)
 		r.Post("/api/admin/upload", handlers.UploadImage)
+		r.Post("/api/admin/upload-resume", handlers.UploadResume)
 	})
 
 	// === STATIC FILE SERVING ===
+	// Proxy files from Supabase Storage
+	r.Get("/api/storage", handlers.ProxyStorage)
+
 	// Serve uploaded files (images, PDFs)
 	r.Handle("/uploads/*", handlers.ServeUploads(config.C.UploadDir))
 

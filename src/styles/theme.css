@@ -13,6 +13,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
 
   --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
@@ -27,7 +29,7 @@
   --foreground: #0f172a;
   --card: rgba(255, 255, 255, 0.75);
   --card-foreground: #0f172a;
-  --primary: #007aff; /* macOS Accent Blue */
+  --primary: #007aff;
   --primary-foreground: #ffffff;
   --secondary: rgba(230, 235, 245, 0.6);
   --secondary-foreground: #1e293b;
@@ -35,6 +37,8 @@
   --muted-foreground: #64748b;
   --accent: #007aff;
   --accent-foreground: #ffffff;
+  --popover: rgba(255, 255, 255, 0.95);
+  --popover-foreground: #0f172a;
   --border: rgba(203, 213, 225, 0.5);
   --ring: #007aff;
   --radius: 0.875rem;
@@ -45,7 +49,7 @@
   --foreground: #f8fafc;
   --card: rgba(18, 24, 38, 0.72);
   --card-foreground: #f8fafc;
-  --primary: #0a84ff; /* macOS Dark Blue Accent */
+  --primary: #0a84ff;
   --primary-foreground: #ffffff;
   --secondary: rgba(30, 41, 59, 0.6);
   --secondary-foreground: #f1f5f9;
@@ -53,6 +57,8 @@
   --muted-foreground: #94a3b8;
   --accent: #0a84ff;
   --accent-foreground: #ffffff;
+  --popover: rgba(30, 41, 59, 0.95);
+  --popover-foreground: #f8fafc;
   --border: rgba(255, 255, 255, 0.12);
   --ring: #0a84ff;
 }

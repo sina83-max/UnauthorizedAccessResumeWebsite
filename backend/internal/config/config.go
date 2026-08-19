@@ -7,16 +7,19 @@ import (
 )
 
 type Config struct {
-	DBUrl         string
-	JWTSecret     string
-	Port          string
-	UploadDir     string
-	SMTPHost      string
-	SMTPPort      string
-	SMTPUser      string
-	SMTPPass      string
-	AdminUsername string
-	AdminPassword string
+	DBUrl          string
+	JWTSecret      string
+	Port           string
+	UploadDir      string
+	SMTPHost       string
+	SMTPPort       string
+	SMTPUser       string
+	SMTPPass       string
+	AdminUsername  string
+	AdminPassword  string
+	SupabaseURL    string
+	SupabaseKey    string
+	SupabaseBucket string
 }
 
 // C is the global config instance. After calling Load(), you can access
@@ -29,16 +32,19 @@ func Load() *Config {
 	C = &Config{
 		// os.Getenv returns "" if the key doesn't exist.
 		// The second argument is the fallback default.
-		DBUrl:         getEnv("DB_URL", "postgres://postgres:devpassword@localhost:5432/portfolio?sslmode=disable"),
-		JWTSecret:     getEnv("JWT_SECRET", "dev-secret-change-in-production"),
-		Port:          getEnv("PORT", "8080"),
-		UploadDir:     getEnv("UPLOAD_DIR", "uploads"),
-		SMTPHost:      getEnv("SMTP_HOST", ""),
-		SMTPPort:      getEnv("SMTP_PORT", ""),
-		SMTPUser:      getEnv("SMTP_USER", ""),
-		SMTPPass:      getEnv("SMTP_PASS", ""),
-		AdminUsername: getEnv("ADMIN_USERNAME", "admin"),
-		AdminPassword: getEnv("ADMIN_PASSWORD", "changeme"),
+		DBUrl:          getEnv("DB_URL", "postgres://postgres:devpassword@localhost:5432/portfolio?sslmode=disable"),
+		JWTSecret:      getEnv("JWT_SECRET", "dev-secret-change-in-production"),
+		Port:           getEnv("PORT", "8080"),
+		UploadDir:      getEnv("UPLOAD_DIR", "uploads"),
+		SMTPHost:       getEnv("SMTP_HOST", ""),
+		SMTPPort:       getEnv("SMTP_PORT", ""),
+		SMTPUser:       getEnv("SMTP_USER", ""),
+		SMTPPass:       getEnv("SMTP_PASS", ""),
+		AdminUsername:  getEnv("ADMIN_USERNAME", "admin"),
+		AdminPassword:  getEnv("ADMIN_PASSWORD", "changeme"),
+		SupabaseURL:    getEnv("SUPABASE_URL", ""),
+		SupabaseKey:    getEnv("SUPABASE_KEY", ""),
+		SupabaseBucket: getEnv("SUPABASE_BUCKET", "uploads"),
 	}
 
 	return C

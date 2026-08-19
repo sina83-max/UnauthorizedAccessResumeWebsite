@@ -1,13 +1,15 @@
 package handlers
 
 import (
-	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"portfolio-api/internal/config"
+	"portfolio-api/internal/storage"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 var allowedExtensions = map[string]bool{
@@ -19,12 +21,7 @@ var allowedExtensions = map[string]bool{
 	".pdf":  true,
 }
 
-// UploadImage handles multipart file uploads.
-// It saves the file with a UUID filename to prevent collisions
-// and returns the URL path the frontend can use.
 func UploadImage(w http.ResponseWriter, r *http.Request) {
-	// ParseMultipartForm limits the total form size to 10MB.
-	// This includes all form fields + file data.
 	r.ParseMultipartForm(10 << 20)
 
 	file, handler, err := r.FormFile("file")
@@ -37,18 +34,25 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 	ext := strings.ToLower(filepath.Ext(handler.Filename))
 	if !allowedExtensions[ext] {
 		http.Error(w, `{"error": "invalid file extension"}`, http.StatusBadRequest)
-	}
-
-	filename := uuid.New().String() + ext
-
-	// upload directory check
-	uploadDir := config.C.UploadDir
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
-		http.Error(w, `{"error": "could not create directory"}`, http.StatusInternalServerError)
 		return
 	}
 
-	// create file
+	data, _ := io.ReadAll(file)
+
+	if config.C.SupabaseURL != "" {
+		filePath := "images/" + uuid.New().String() + ext
+		url, err := storage.UploadFile(filePath, data)
+		if err != nil {
+			http.Error(w, `{"error": "upload failed"}`, http.StatusInternalServerError)
+			return
+		}
+		jsonResponse(w, http.StatusOK, map[string]string{"url": url})
+		return
+	}
+
+	filename := uuid.New().String() + ext
+	uploadDir := config.C.UploadDir
+	os.MkdirAll(uploadDir, 0755)
 	dstpath := filepath.Join(uploadDir, filename)
 	dst, err := os.Create(dstpath)
 	if err != nil {
@@ -56,28 +60,58 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer dst.Close()
+	dst.Write(data)
 
-	// Copy the content to destination file
-	if _, err := io.Copy(dst, file); err != nil {
-		http.Error(w, `{"error": "could not save file"}`, http.StatusInternalServerError)
+	jsonResponse(w, http.StatusOK, map[string]string{"url": "/uploads/" + filename})
+}
+
+func UploadResume(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(10 << 20)
+
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, `{"error": "no file provided"}`, http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	ext := strings.ToLower(filepath.Ext(handler.Filename))
+	if ext != ".pdf" {
+		http.Error(w, `{"error": "only PDF files are allowed"}`, http.StatusBadRequest)
 		return
 	}
 
-	// url for frontend
-	jsonResponse(w, http.StatusOK, map[string]string{
-		"url": "/uploads/" + filename,
-	})
+	data, _ := io.ReadAll(file)
+
+	if config.C.SupabaseURL != "" {
+		url, err := storage.UploadFile("resume.pdf", data)
+		if err != nil {
+			http.Error(w, `{"error": "upload failed"}`, http.StatusInternalServerError)
+			return
+		}
+		jsonResponse(w, http.StatusOK, map[string]string{"url": url})
+		return
+	}
+
+	uploadDir := config.C.UploadDir
+	os.MkdirAll(uploadDir, 0755)
+	dstPath := filepath.Join(uploadDir, "resume.pdf")
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		http.Error(w, `{"error": "could not create file"}`, http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+	dst.Write(data)
+
+	jsonResponse(w, http.StatusOK, map[string]string{"url": "/uploads/resume.pdf"})
 }
 
-// ServeUploads returns an http.Handler that serves files from the uploads directory.
-// chi's routing handles stripping the /uploads prefix before calling this handler.
 func ServeUploads(uploadDir string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Strip the /uploads prefix to get the actual filename
 		path := strings.TrimPrefix(r.URL.Path, "/uploads/")
 		filePath := filepath.Join(uploadDir, path)
 
-		// Check if file exists before serving
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			http.NotFound(w, r)
 			return

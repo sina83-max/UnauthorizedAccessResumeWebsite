@@ -44,7 +44,7 @@ function estimateSize(content: string): string {
 // --- Build individual file nodes ---
 
 function buildResumePDF(settings: Record<string, string>): FileNode {
-  const pdfUrl = settings["resume.pdf_url"] || "/uploads/resume.pdf";
+  const pdfUrl = settings["resume.pdf_url"] || "/api/storage?path=resume.pdf";
   return {
     id: "resume-pdf",
     name: "resume.pdf",
@@ -104,16 +104,22 @@ function buildContactVCF(settings: Record<string, string>): FileNode {
   const email = settings["contact.email"] || "";
   const phone = settings["contact.phone"] || "";
   const location = settings["contact.location"] || "";
+  const title = settings["contact.title"] || "";
+  const github = settings["contact.github"] || "";
+  const linkedin = settings["contact.linkedin"] || "";
 
   const vcf = [
     "BEGIN:VCARD",
     "VERSION:3.0",
     `FN:${name}`,
+    title ? `TITLE:${title}` : "",
     `EMAIL:${email}`,
     `TEL:${phone}`,
     `ADR:;;${location};;;;`,
+    github ? `URL:${github}` : "",
+    linkedin ? `X-SOCIALPROFILE;type=linkedin:${linkedin}` : "",
     "END:VCARD",
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 
   return {
     id: "contact",

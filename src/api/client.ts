@@ -3,6 +3,8 @@ import type {
   BlogCategory,
   CategoryPostsResponse,
   BlogPost,
+  ResumeSection,
+  Project,
 } from "@/types/api";
 
 const API_BASE = "/api";
@@ -71,6 +73,26 @@ async function adminFetch<T>(
   });
 }
 
+// --- Admin List (GET) ---
+
+export function adminListResumeSections(token: string): Promise<ResumeSection[]> {
+  return adminFetch<ResumeSection[]>("/resume-sections", token);
+}
+
+export function adminListProjects(token: string): Promise<Project[]> {
+  return adminFetch<Project[]>("/projects", token);
+}
+
+export function adminListCategories(token: string): Promise<BlogCategory[]> {
+  return adminFetch<BlogCategory[]>("/blog/categories", token);
+}
+
+export function adminListPosts(token: string): Promise<BlogPost[]> {
+  return adminFetch<BlogPost[]>("/blog/posts", token);
+}
+
+// --- Admin Mutations ---
+
 export function updateResumeSection(
   key: string,
   data: { title: string; content_md?: string; content_json?: unknown },
@@ -107,6 +129,10 @@ export function createCategory(data: unknown, token: string) {
   });
 }
 
+export function deleteCategory(id: number, token: string) {
+  return adminFetch(`/blog/categories/${id}`, token, { method: "DELETE" });
+}
+
 export function createPost(data: unknown, token: string) {
   return adminFetch("/blog/posts", token, {
     method: "POST",
@@ -139,5 +165,22 @@ export async function uploadFile(
   });
 
   if (!res.ok) throw new Error("Upload failed");
+  return res.json();
+}
+
+export async function uploadResume(
+  file: File,
+  token: string
+): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}/admin/upload-resume`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Resume upload failed");
   return res.json();
 }
