@@ -158,6 +158,12 @@ func setupFrontendServing(r chi.Router) {
 
 		// Try to serve the file. If it doesn't exist (SPA routing),
 		// serve index.html so React Router can handle the path.
+		f, err := staticFS.Open(strings.TrimPrefix(r.URL.Path, "/"))
+		if err != nil {
+			r.URL.Path = "/"
+		} else {
+			f.Close()
+		}
 		fileServer.ServeHTTP(w, r)
 	})
 }
