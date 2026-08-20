@@ -20,11 +20,13 @@ func Connect(cfg *config.Config) error {
 	var err error
 
 	dsn := cfg.DBUrl
-	if !strings.Contains(dsn, "pgbouncer") {
-		if strings.Contains(dsn, "?") {
-			dsn += "&pgbouncer=true"
-		} else {
-			dsn += "?pgbouncer=true"
+	if strings.Contains(dsn, "supabase") || strings.Contains(dsn, "pgbouncer") {
+		if !strings.Contains(dsn, "pgbouncer") {
+			if strings.Contains(dsn, "?") {
+				dsn += "&pgbouncer=true"
+			} else {
+				dsn += "?pgbouncer=true"
+			}
 		}
 	}
 

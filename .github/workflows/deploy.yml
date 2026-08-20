@@ -1,0 +1,44 @@
+name: VPS Deploy (No Docker)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Set up pnpm
+        uses: pnpm/@v10/action/use@v4
+        with:
+          version: 9
+
+      - name: Build Frontend
+        run: pnpm build
+
+      - name: Build Go Binary (embeds frontend)
+        run: |
+          cd backend
+          go build -o portfolio-api .
+
+      - name: Deploy to VPS via SSH (Password)
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          script: |
+            cd /var/www/portfolio
+            rm -f portfolio-api
+            scp ./portfolio-api .
+            chmod +x portfolio-api
+            nohup ./portfolio-api > /var/log/portfolio.log 2>&1 &

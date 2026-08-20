@@ -783,7 +783,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                   ) : viewMode === 'icon' ? (
                     /* ICON VIEW */
                     <div
-                      className="flex-1 overflow-y-auto p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 align-content-start"
+                      className="flex-1 overflow-y-auto p-6 grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] justify-items-center items-start gap-y-1 gap-x-4 align-content-start"
                       onClick={() => setSelectedFile(null)}
                     >
                       {displayedFiles.map((file) => {
@@ -805,7 +805,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                                 : 'border-transparent hover:bg-secondary/50 hover:border-border/30'
                             }`}
                           >
-                            <div className="mb-2 transition-transform group-hover:scale-105">
+                            <div className="mb-1 transition-transform group-hover:scale-105">
                               <FileTypeIcon type={file.type} className="w-14 h-14" />
                             </div>
                             <span className={`text-xs font-medium text-center line-clamp-2 px-1 rounded ${
