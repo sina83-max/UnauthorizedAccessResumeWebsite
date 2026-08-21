@@ -64,8 +64,9 @@ func GetPostsByCategory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Find all posts in this category (preloads the Category relation)
+	// Only show published posts on the public site
 	var posts []models.BlogPost
-	database.DB.Where("category_id = ?", category.ID).
+	database.DB.Where("category_id = ? AND status = ?", category.ID, "published").
 		Preload("Category").
 		Order("published_at DESC").
 		Find(&posts)
@@ -88,7 +89,7 @@ func GetPostBySlug(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
 	var post models.BlogPost
-	if err := database.DB.Where("slug = ?", slug).
+	if err := database.DB.Where("slug = ? AND status = ?", slug, "published").
 		Preload("Category").
 		First(&post).Error; err != nil {
 		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "post not found"})

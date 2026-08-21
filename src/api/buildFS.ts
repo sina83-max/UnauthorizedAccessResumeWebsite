@@ -8,7 +8,7 @@ import type {
 
 // --- FileNode type (same shape as the existing one in App.tsx) ---
 
-export type FileType = "folder" | "markdown" | "pdf" | "json" | "vcf" | "code";
+export type FileType = "folder" | "markdown" | "pdf" | "json" | "vcf" | "code" | "html";
 
 export interface FileNode {
   id: string;
@@ -135,11 +135,11 @@ function buildContactVCF(settings: Record<string, string>): FileNode {
 function buildBlogPostFile(post: BlogPost): FileNode {
   return {
     id: `post-${post.id}`,
-    name: `${post.slug}.md`,
-    type: "markdown",
-    size: estimateSize(post.content_md || ""),
+    name: `${post.slug}.html`,
+    type: "html",
+    size: estimateSize(post.content_html || ""),
     date: formatDate(post.published_at),
-    content: post.content_md || "",
+    content: post.content_html || "",
     coverImage: post.cover_image || "",
     category: post.category?.name || "Article",
   };

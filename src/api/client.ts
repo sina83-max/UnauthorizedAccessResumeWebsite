@@ -155,6 +155,10 @@ export function deletePost(id: number, token: string) {
   return adminFetch(`/blog/posts/${id}`, token, { method: "DELETE" });
 }
 
+export function togglePostStatus(id: number, token: string): Promise<BlogPost> {
+  return adminFetch<BlogPost>(`/blog/posts/${id}/status`, token, { method: "PATCH" });
+}
+
 // --- Admin Users ---
 
 export function adminListUsers(token: string): Promise<{ id: number; username: string }[]> {

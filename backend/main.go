@@ -111,6 +111,7 @@ func main() {
 		r.Post("/api/admin/blog/posts", handlers.CreatePost)
 		r.Put("/api/admin/blog/posts/{id}", handlers.UpdatePost)
 		r.Delete("/api/admin/blog/posts/{id}", handlers.DeletePost)
+		r.Patch("/api/admin/blog/posts/{id}/status", handlers.TogglePostStatus)
 		r.Post("/api/admin/upload", handlers.UploadImage)
 		r.Post("/api/admin/upload-resume", handlers.UploadResume)
 		r.Post("/api/admin/change-password", handlers.ChangePassword)

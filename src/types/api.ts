@@ -35,7 +35,9 @@ export interface BlogPost {
   title: string;
   slug: string;
   content_md: string;
+  content_html: string;
   cover_image: string;
+  status: "draft" | "published";
   published_at: string | null;
   created_at: string;
   updated_at: string;

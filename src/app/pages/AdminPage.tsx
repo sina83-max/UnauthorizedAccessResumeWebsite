@@ -52,7 +52,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/ui/select";
-import { format } from "date-fns";
 import {
   adminLogin,
   adminListResumeSections,
@@ -75,8 +74,10 @@ import {
   adminListUsers,
   adminCreateUser,
   adminDeleteUser,
+  togglePostStatus,
 } from "@/api/client";
-import MDEditor from "@uiw/react-md-editor";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import type {
   ResumeSection,
   Project,
@@ -137,7 +138,7 @@ export default function AdminPage() {
     category_id: 0,
     title: "",
     slug: "",
-    content_md: "",
+    content_html: "",
     cover_image: "",
   });
 
@@ -315,7 +316,7 @@ export default function AdminPage() {
 
   // ── Post CRUD ────────────────────────────────────────────────────────────
   const resetPostForm = () =>
-    setPostForm({ category_id: categories[0]?.id ?? 0, title: "", slug: "", content_md: "", cover_image: "" });
+    setPostForm({ category_id: categories[0]?.id ?? 0, title: "", slug: "", content_html: "", cover_image: "" });
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,6 +359,33 @@ export default function AdminPage() {
       addToast("error", "Failed to delete post");
       console.error(err);
     }
+  };
+
+  const handleToggleStatus = async (id: number) => {
+    try {
+      const updated = await togglePostStatus(id, token!);
+      setPosts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      addToast("success", `Post ${updated.status === "published" ? "published" : "unpublished"}`);
+    } catch (err) {
+      addToast("error", "Failed to toggle status");
+      console.error(err);
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      addToast("error", "Only image files are allowed");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setPostForm((p) => ({ ...p, cover_image: base64 }));
+      addToast("success", "Cover image loaded");
+    };
+    reader.readAsDataURL(file);
   };
 
   // ── File upload helper ───────────────────────────────────────────────────
@@ -1153,20 +1181,76 @@ export default function AdminPage() {
                           required
                         />
                       </div>
-                      <FormField
-                        label="Cover Image URL"
-                        value={postForm.cover_image}
-                        onChange={(v) => setPostForm((p) => ({ ...p, cover_image: v }))}
-                        placeholder="https://... or /uploads/..."
-                      />
                       <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Content (Markdown)</Label>
-                        <MDEditor
-                          value={postForm.content_md}
-                          onChange={(val) => setPostForm((p) => ({ ...p, content_md: val || "" }))}
-                          height={400}
-                          preview="live"
-                        />
+                        <Label className="text-xs text-muted-foreground">Cover Image</Label>
+                        <div className="flex items-center gap-3">
+                          {postForm.cover_image && (
+                            <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-border/40">
+                              <img src={postForm.cover_image} alt="Cover" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setPostForm((p) => ({ ...p, cover_image: "" }))}
+                                className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-destructive/80 text-white hover:bg-destructive"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+                          <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/60 border border-border/60 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors">
+                            <Upload className="w-4 h-4" />
+                            {postForm.cover_image ? "Change Cover" : "Upload Cover"}
+                            <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                          </label>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Content (HTML)</Label>
+                        <div className="rounded-xl border border-border/60 overflow-hidden">
+                          <CKEditor
+                            editor={ClassicEditor}
+                            data={postForm.content_html}
+                            onChange={(_event, editor) => {
+                              setPostForm((p) => ({ ...p, content_html: editor.getData() }));
+                            }}
+                            config={{
+                              toolbar: {
+                                items: [
+                                  "heading",
+                                  "|",
+                                  "bold",
+                                  "italic",
+                                  "link",
+                                  "bulletedList",
+                                  "numberedList",
+                                  "|",
+                                  "outdent",
+                                  "indent",
+                                  "|",
+                                  "imageUpload",
+                                  "blockQuote",
+                                  "insertTable",
+                                  "mediaEmbed",
+                                  "|",
+                                  "undo",
+                                  "redo",
+                                  "|",
+                                  "fontSize",
+                                  "fontColor",
+                                  "fontBackgroundColor",
+                                  "alignment",
+                                  "htmlEmbed",
+                                ],
+                                shouldNotGroupWhenFull: true,
+                              },
+                              image: {
+                                upload: {
+                                  types: ["jpeg", "png", "gif", "webp", "bmp"],
+                                },
+                              },
+                              language: "en",
+                            }}
+                          />
+                        </div>
                       </div>
                       <Button type="submit" size="sm" className="text-xs gap-1">
                         <Plus className="w-3 h-3" />
@@ -1189,7 +1273,7 @@ export default function AdminPage() {
                         <TableRow className="border-border/40">
                           <TableHead className="text-xs">Title</TableHead>
                           <TableHead className="text-xs">Category</TableHead>
-                          <TableHead className="text-xs">Published</TableHead>
+                          <TableHead className="text-xs">Status</TableHead>
                           <TableHead className="text-xs text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -1248,7 +1332,7 @@ export default function AdminPage() {
                                       />
                                     </div>
                                     <FormField
-                                        label="Cover Image URL"
+                                        label="Cover Image"
                                         value={postForm.cover_image}
                                         onChange={(v) =>
                                           setPostForm((p) => ({ ...p, cover_image: v }))
@@ -1256,19 +1340,36 @@ export default function AdminPage() {
                                       />
                                     <div className="space-y-1.5">
                                       <Label className="text-xs text-muted-foreground">
-                                        Content (Markdown)
+                                        Content (HTML)
                                       </Label>
-                                      <MDEditor
-                                        value={postForm.content_md}
-                                        onChange={(val) =>
-                                          setPostForm((p) => ({
-                                            ...p,
-                                            content_md: val || "",
-                                          }))
-                                        }
-                                        height={300}
-                                        preview="live"
-                                      />
+                                      <div className="rounded-xl border border-border/60 overflow-hidden">
+                                        <CKEditor
+                                          editor={ClassicEditor}
+                                          data={postForm.content_html}
+                                          onChange={(_event, editor) =>
+                                            setPostForm((p) => ({
+                                              ...p,
+                                              content_html: editor.getData(),
+                                            }))
+                                          }
+                                          config={{
+                                            toolbar: {
+                                              items: [
+                                                "heading", "|", "bold", "italic", "link",
+                                                "bulletedList", "numberedList", "|",
+                                                "outdent", "indent", "|",
+                                                "imageUpload", "blockQuote", "insertTable", "mediaEmbed",
+                                                "|", "undo", "redo", "|",
+                                                "fontSize", "fontColor", "fontBackgroundColor",
+                                                "alignment", "htmlEmbed",
+                                              ],
+                                              shouldNotGroupWhenFull: true,
+                                            },
+                                            image: { upload: { types: ["jpeg", "png", "gif", "webp", "bmp"] } },
+                                            language: "en",
+                                          }}
+                                        />
+                                      </div>
                                     </div>
                                     <div className="flex gap-2">
                                       <Button
@@ -1301,10 +1402,17 @@ export default function AdminPage() {
                               <TableCell className="text-xs text-muted-foreground">
                                 {catName}
                               </TableCell>
-                              <TableCell className="text-xs text-muted-foreground font-mono">
-                                {post.published_at
-                                  ? format(new Date(post.published_at), "MMM d, yyyy")
-                                  : "Draft"}
+                              <TableCell>
+                                <button
+                                  onClick={() => handleToggleStatus(post.id)}
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+                                    post.status === "published"
+                                      ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/25"
+                                      : "bg-amber-500/15 border-amber-500/30 text-amber-500 hover:bg-amber-500/25"
+                                  }`}
+                                >
+                                  {post.status === "published" ? "Published" : "Draft"}
+                                </button>
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex gap-1 justify-end">
@@ -1318,7 +1426,7 @@ export default function AdminPage() {
                                         category_id: post.category_id,
                                         title: post.title,
                                         slug: post.slug,
-                                        content_md: post.content_md,
+                                        content_html: post.content_html || "",
                                         cover_image: post.cover_image || "",
                                       });
                                     }}
@@ -1373,6 +1481,7 @@ export default function AdminPage() {
                       />
                       <FormField
                         label="Password"
+                        type="password"
                         value={newUser.password}
                         onChange={(v) => setNewUser((p) => ({ ...p, password: v }))}
                         required
@@ -1448,12 +1557,14 @@ export default function AdminPage() {
                   <form onSubmit={handleChangePassword} className="space-y-4">
                     <FormField
                       label="Current Password"
+                      type="password"
                       value={pwCurrent}
                       onChange={setPwCurrent}
                       required
                     />
                     <FormField
                       label="New Password"
+                      type="password"
                       value={pwNew}
                       onChange={setPwNew}
                       required

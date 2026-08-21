@@ -49,7 +49,8 @@ import {
   Moon as MoonIcon,
   Power,
   Github,
-  Linkedin
+  Linkedin,
+  Globe
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -123,6 +124,7 @@ const macOSFileIcons: Record<FileType, { color: string; bg: string; badge: strin
   pdf: { color: 'text-red-500', bg: 'bg-red-500/10 border-red-500/30', badge: 'PDF' },
   json: { color: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/30', badge: 'JSON' },
   markdown: { color: 'text-blue-500', bg: 'bg-blue-500/10 border-blue-500/30', badge: 'DOC' },
+  html: { color: 'text-orange-500', bg: 'bg-orange-500/10 border-orange-500/30', badge: 'HTML' },
   vcf: { color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/30', badge: 'VCF' },
   code: { color: 'text-purple-500', bg: 'bg-purple-500/10 border-purple-500/30', badge: 'CODE' }
 };
@@ -157,13 +159,20 @@ const FileTypeIcon = ({ type, className = "w-10 h-10" }: { type: FileType; class
         </div>
       );
     case 'markdown':
-    default:
       return (
         <div className={`relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg shadow-md border border-white/20 p-2 text-white ${className}`}>
           <FileCode className="w-1/2 h-1/2 mb-0.5" />
           <span className="text-[9px] font-bold tracking-wider uppercase">MD</span>
         </div>
       );
+    case 'html':
+      return (
+        <div className={`relative flex flex-col items-center justify-center bg-gradient-to-br from-orange-500 to-red-500 rounded-lg shadow-md border border-white/20 p-2 text-white ${className}`}>
+          <Globe className="w-1/2 h-1/2 mb-0.5" />
+          <span className="text-[9px] font-bold tracking-wider uppercase">HTML</span>
+        </div>
+      );
+    default:
   }
 };
 
@@ -267,7 +276,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
   const handleDoubleClickNode = (node: FileNode) => {
     if (node.type === 'folder') {
       handleOpenNode(node);
-    } else if (node.type === 'markdown' && node.category) {
+    } else if (node.type === 'html' && node.category) {
       // Opening blog post in full reading view
       setReadingPost(node);
     } else {
@@ -1130,8 +1139,15 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                   </div>
                 )}
 
-                {/* 3. MARKDOWN VIEW (projects.md / posts) */}
+                {/* 3. MARKDOWN VIEW (projects.md / resume sections) */}
                 {quickLookFile.type === 'markdown' && (
+                  <div className="text-xs leading-relaxed space-y-4">
+                    <MarkdownRenderer content={quickLookFile.content || ''} className="text-xs leading-relaxed" />
+                  </div>
+                )}
+
+                {/* 3b. HTML VIEW (blog posts) */}
+                {quickLookFile.type === 'html' && (
                   <div className="text-xs leading-relaxed space-y-4">
                     {quickLookFile.coverImage && (
                       <div className="w-full aspect-[16/9] rounded-xl overflow-hidden bg-secondary/50 -mx-6 sm:-mx-0 -mt-6 sm:-mt-0">
@@ -1156,7 +1172,11 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                         </button>
                       </div>
                     )}
-                    <MarkdownRenderer content={quickLookFile.content || ''} className="text-xs leading-relaxed" />
+                    <div
+                      className="prose dark:prose-invert max-w-none text-xs leading-relaxed [&_img]:max-w-full [&_img]:rounded-lg"
+                      dir="rtl"
+                      dangerouslySetInnerHTML={{ __html: quickLookFile.content || '' }}
+                    />
                   </div>
                 )}
 
@@ -1263,14 +1283,18 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                     {readingPost.category || 'Article'}
                   </span>
                   <h1 className="text-2xl sm:text-4xl font-black tracking-tight mt-4 text-foreground">
-                    {readingPost.name.replace('.md', '').replaceAll('-', ' ').toUpperCase()}
+                    {readingPost.name.replace('.html', '').replace('.md', '').replaceAll('-', ' ').toUpperCase()}
                   </h1>
                   <p className="text-xs text-muted-foreground mt-2">
                     Published on {readingPost.date} • Written by Sina Beignazari
                   </p>
                 </div>
 
-                <MarkdownRenderer content={readingPost.content || ''} className="text-sm sm:text-base leading-relaxed" />
+                <div
+                  className="prose dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed [&_img]:max-w-full [&_img]:rounded-xl"
+                  dir="rtl"
+                  dangerouslySetInnerHTML={{ __html: readingPost.content || '' }}
+                />
               </article>
             </div>
           </motion.div>

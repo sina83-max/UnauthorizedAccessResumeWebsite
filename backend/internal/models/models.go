@@ -52,7 +52,9 @@ type BlogPost struct {
 	Title       string         `json:"title"`
 	Slug        string         `gorm:"uniqueIndex;not null" json:"slug"`
 	ContentMD   string         `gorm:"type:text" json:"content_md"`
-	CoverImage  string         `json:"cover_image"`
+	ContentHTML string         `gorm:"type:text" json:"content_html"`
+	CoverImage  string         `gorm:"type:text" json:"cover_image"`
+	Status      string         `gorm:"type:varchar(20);default:'draft'" json:"status"`
 	PublishedAt *time.Time     `json:"published_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 	CreatedAt   time.Time      `json:"created_at"`

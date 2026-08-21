@@ -8,6 +8,7 @@ import (
 	"portfolio-api/internal/database"
 	"portfolio-api/internal/models"
 	"strconv"
+	"time"
 )
 
 // This helper extracts a url parameter and converts it to uint
@@ -249,4 +250,30 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	database.DB.Delete(&post) // This sets deleted_at, doesn't DELETE the row
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// TogglePostStatus switches a post between "draft" and "published".
+func TogglePostStatus(w http.ResponseWriter, r *http.Request) {
+	id, ok := uintParam(w, r, "id")
+	if !ok {
+		return
+	}
+
+	var post models.BlogPost
+	if err := database.DB.First(&post, id).Error; err != nil {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "post not found"})
+		return
+	}
+
+	if post.Status == "published" {
+		post.Status = "draft"
+		post.PublishedAt = nil
+	} else {
+		post.Status = "published"
+		now := time.Now()
+		post.PublishedAt = &now
+	}
+
+	database.DB.Save(&post)
+	jsonResponse(w, http.StatusOK, post)
 }
