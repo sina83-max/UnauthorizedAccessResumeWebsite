@@ -57,6 +57,7 @@ import {
   adminListCategories,
   adminListPosts,
   updateResumeSection,
+  deleteResumeSection,
   createProject,
   updateProject,
   deleteProject,
@@ -93,7 +94,7 @@ export default function AdminPage() {
   const navigate = useNavigate();
 
   // ── Auth state ───────────────────────────────────────────────────────────
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("admin_token"));
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -151,6 +152,7 @@ export default function AdminPage() {
     setLoginLoading(true);
     try {
       const res = await adminLogin(loginUser, loginPass);
+      localStorage.setItem("admin_token", res.token);
       setToken(res.token);
       addToast("success", "Authenticated successfully");
     } catch {
@@ -215,6 +217,18 @@ export default function AdminPage() {
       addToast("success", `Section "${key}" updated`);
     } catch (err) {
       addToast("error", "Failed to save section");
+      console.error(err);
+    }
+  };
+
+  const handleDeleteSection = async (key: string) => {
+    if (!window.confirm(`Delete section "${key}"?`)) return;
+    try {
+      await deleteResumeSection(key, token!);
+      setSections((prev) => prev.filter((s) => s.key !== key));
+      addToast("success", `Section "${key}" deleted`);
+    } catch (err) {
+      addToast("error", "Failed to delete section");
       console.error(err);
     }
   };
@@ -498,6 +512,7 @@ export default function AdminPage() {
             variant="ghost"
             size="sm"
             onClick={() => {
+              localStorage.removeItem("admin_token");
               setToken(null);
               setLoginUser("");
               setLoginPass("");
@@ -616,24 +631,35 @@ export default function AdminPage() {
                             <span className="text-sm font-medium">{section.title}</span>
                           </div>
                           {!isEditing && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setEditingSectionKey(section.key);
-                                setSectionForm({
-                                  title: section.title,
-                                  content_md: section.content_md,
-                                  content_json: section.content_json
-                                    ? JSON.stringify(section.content_json, null, 2)
-                                    : "",
-                                });
-                              }}
-                              className="text-xs gap-1"
-                            >
-                              <Pencil className="w-3 h-3" />
-                              Edit
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingSectionKey(section.key);
+                                  setSectionForm({
+                                    title: section.title,
+                                    content_md: section.content_md,
+                                    content_json: section.content_json
+                                      ? JSON.stringify(section.content_json, null, 2)
+                                      : "",
+                                  });
+                                }}
+                                className="text-xs gap-1"
+                              >
+                                <Pencil className="w-3 h-3" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteSection(section.key)}
+                                className="text-xs gap-1 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Delete
+                              </Button>
+                            </div>
                           )}
                         </div>
 

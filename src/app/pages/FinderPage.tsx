@@ -171,7 +171,7 @@ const FileTypeIcon = ({ type, className = "w-10 h-10" }: { type: FileType; class
 
 export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; onToggleDark: () => void }) {
   // Connection state
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(() => localStorage.getItem("portfolio_connected") === "true");
   const [isConnecting, setIsConnecting] = useState(false);
   const [serverAddress, setServerAddress] = useState('smb://sina.macbook-pro.local');
   const [username, setUsername] = useState('visitor');
@@ -183,6 +183,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
     setTimeout(() => {
       setIsConnecting(false);
       setIsConnected(true);
+      localStorage.setItem("portfolio_connected", "true");
     }, 1200);
   };
 
@@ -480,7 +481,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                   {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsConnected(false)}>
+                <DropdownMenuItem onClick={() => { localStorage.removeItem("portfolio_connected"); setIsConnected(false); }}>
                   <Power className="w-4 h-4 mr-2" />
                   Disconnect
                 </DropdownMenuItem>
@@ -587,7 +588,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                   {/* Decorative macOS Traffic Light Buttons */}
                   <div className="flex items-center gap-2 group">
                     <button
-                      onClick={() => setIsConnected(false)}
+                      onClick={() => { localStorage.removeItem("portfolio_connected"); setIsConnected(false); }}
                       className="w-3 h-3 rounded-full bg-rose-500 hover:bg-rose-600 transition-colors flex items-center justify-center text-[8px] text-rose-950 font-bold"
                       title="Disconnect Session"
                     >
@@ -1088,6 +1089,9 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                     <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-border bg-background/80 backdrop-blur shrink-0">
                       <span className="text-xs font-semibold text-muted-foreground">
                         {quickLookFile.name}
+                        {quickLookFile.size && quickLookFile.size !== "—" && (
+                          <span className="ml-2 font-normal opacity-60">({quickLookFile.size})</span>
+                        )}
                       </span>
                       <a
                         href={quickLookFile.content || '/uploads/resume.pdf'}

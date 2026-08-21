@@ -65,6 +65,18 @@ func DeleteCategory(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// DeleteResumeSection hard-deletes a resume section by its key.
+func DeleteResumeSection(w http.ResponseWriter, r *http.Request) {
+	key := chi.URLParam(r, "key")
+
+	result := database.DB.Where("key = ?", key).Delete(&models.ResumeSection{})
+	if result.RowsAffected == 0 {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "section not found"})
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // UpdateResumeSection updates (or creates) a resume section by its key.
 // Uses upsert logic: try to find first, create if not found.
 func UpdateResumeSection(w http.ResponseWriter, r *http.Request) {

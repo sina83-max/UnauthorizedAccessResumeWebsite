@@ -44,12 +44,12 @@ function estimateSize(content: string): string {
 // --- Build individual file nodes ---
 
 function buildResumePDF(settings: Record<string, string>): FileNode {
-  const pdfUrl = settings["resume.pdf_url"] || "/api/storage?path=resume.pdf";
+  const pdfUrl = settings["resume.pdf_url"] || "/uploads/resume.pdf";
   return {
     id: "resume-pdf",
     name: "resume.pdf",
     type: "pdf",
-    size: "—",
+    size: "780 KB",
     date: "",
     content: pdfUrl,
     downloadName: "Resume.pdf",
@@ -172,8 +172,14 @@ export function buildFileSystem(
     personalChildren.push(buildResumeFile(section));
   }
 
-  for (const project of personal.projects) {
-    personalChildren.push(buildProjectFile(project));
+  const projectFiles = personal.projects.map(buildProjectFile);
+  if (projectFiles.length > 0) {
+    personalChildren.push({
+      id: "projects",
+      name: "Projects",
+      type: "folder",
+      children: projectFiles,
+    });
   }
 
   personalChildren.push(buildContactVCF(personal.settings));

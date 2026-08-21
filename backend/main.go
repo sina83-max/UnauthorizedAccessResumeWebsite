@@ -99,6 +99,7 @@ func main() {
 
 		r.Get("/api/admin/resume-sections", handlers.ListResumeSections)
 		r.Put("/api/admin/resume-sections/{key}", handlers.UpdateResumeSection)
+		r.Delete("/api/admin/resume-sections/{key}", handlers.DeleteResumeSection)
 		r.Get("/api/admin/projects", handlers.ListProjects)
 		r.Post("/api/admin/projects", handlers.CreateProject)
 		r.Put("/api/admin/projects/{id}", handlers.UpdateProject)

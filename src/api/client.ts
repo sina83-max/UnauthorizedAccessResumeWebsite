@@ -104,6 +104,10 @@ export function updateResumeSection(
   });
 }
 
+export function deleteResumeSection(key: string, token: string) {
+  return adminFetch(`/resume-sections/${key}`, token, { method: "DELETE" });
+}
+
 export function createProject(data: unknown, token: string) {
   return adminFetch("/projects", token, {
     method: "POST",
