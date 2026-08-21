@@ -32,6 +32,9 @@ jobs:
       - name: Build Frontend
         run: pnpm build
 
+      - name: Copy frontend build into backend/static
+        run: cp -r dist/* backend/static/
+
       - name: Build Go Binary (embeds frontend)
         run: |
           cd backend
