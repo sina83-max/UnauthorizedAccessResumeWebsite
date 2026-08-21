@@ -35,6 +35,7 @@ export interface BlogPost {
   title: string;
   slug: string;
   content_md: string;
+  cover_image: string;
   published_at: string | null;
   created_at: string;
   updated_at: string;

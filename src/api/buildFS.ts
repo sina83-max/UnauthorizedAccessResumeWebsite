@@ -17,6 +17,7 @@ export interface FileNode {
   size?: string;
   date?: string;
   content?: string;
+  coverImage?: string;
   category?: string;
   isRestricted?: boolean;
   children?: FileNode[];
@@ -139,6 +140,7 @@ function buildBlogPostFile(post: BlogPost): FileNode {
     size: estimateSize(post.content_md || ""),
     date: formatDate(post.published_at),
     content: post.content_md || "",
+    coverImage: post.cover_image || "",
     category: post.category?.name || "Article",
   };
 }

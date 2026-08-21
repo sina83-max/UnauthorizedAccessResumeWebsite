@@ -113,6 +113,11 @@ func main() {
 		r.Delete("/api/admin/blog/posts/{id}", handlers.DeletePost)
 		r.Post("/api/admin/upload", handlers.UploadImage)
 		r.Post("/api/admin/upload-resume", handlers.UploadResume)
+		r.Post("/api/admin/change-password", handlers.ChangePassword)
+		r.Get("/api/admin/users", handlers.ListUsers)
+		r.Post("/api/admin/users", handlers.CreateUser)
+		r.Delete("/api/admin/users/{id}", handlers.DeleteUser)
+		r.Post("/api/admin/users/{id}/change-password", handlers.ChangePasswordByID)
 	})
 
 	// === STATIC FILE SERVING ===

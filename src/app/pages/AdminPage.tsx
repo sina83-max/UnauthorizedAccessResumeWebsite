@@ -21,6 +21,9 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
+  Users,
+  Settings,
+  Lock,
 } from "lucide-react";
 import {
   Card,
@@ -57,7 +60,6 @@ import {
   adminListCategories,
   adminListPosts,
   updateResumeSection,
-  deleteResumeSection,
   createProject,
   updateProject,
   deleteProject,
@@ -68,7 +70,13 @@ import {
   deletePost,
   uploadFile,
   uploadResume,
+  deleteResumeSection,
+  changePassword,
+  adminListUsers,
+  adminCreateUser,
+  adminDeleteUser,
 } from "@/api/client";
+import MDEditor from "@uiw/react-md-editor";
 import type {
   ResumeSection,
   Project,
@@ -106,6 +114,7 @@ export default function AdminPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
   // ── Editing state ────────────────────────────────────────────────────────
@@ -129,7 +138,16 @@ export default function AdminPage() {
     title: "",
     slug: "",
     content_md: "",
+    cover_image: "",
   });
+
+  // ── Password change state ────────────────────────────────────────────────
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwNew, setPwNew] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+
+  // ── Admin users state ────────────────────────────────────────────────────
+  const [newUser, setNewUser] = useState({ username: "", password: "" });
 
   // ── Toasts ───────────────────────────────────────────────────────────────
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -169,17 +187,19 @@ export default function AdminPage() {
     (async () => {
       setLoading(true);
       try {
-        const [secs, projs, cats, posts] = await Promise.all([
+        const [secs, projs, cats, postsData, usersData] = await Promise.all([
           adminListResumeSections(token),
           adminListProjects(token),
           adminListCategories(token),
           adminListPosts(token),
+          adminListUsers(token),
         ]);
         if (cancelled) return;
         setSections(secs);
         setProjects(projs);
         setCategories(cats);
-        setPosts(posts);
+        setPosts(postsData);
+        setUsers(usersData);
       } catch (err) {
         addToast("error", "Failed to load data");
         console.error(err);
@@ -295,7 +315,7 @@ export default function AdminPage() {
 
   // ── Post CRUD ────────────────────────────────────────────────────────────
   const resetPostForm = () =>
-    setPostForm({ category_id: categories[0]?.id ?? 0, title: "", slug: "", content_md: "" });
+    setPostForm({ category_id: categories[0]?.id ?? 0, title: "", slug: "", content_md: "", cover_image: "" });
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -372,6 +392,49 @@ export default function AdminPage() {
     } finally {
       setResumeUploading(false);
       if (resumeInputRef.current) resumeInputRef.current.value = "";
+    }
+  };
+
+  // ── Password change ────────────────────────────────────────────────────
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pwNew.trim()) { addToast("error", "New password is required"); return; }
+    setPwLoading(true);
+    try {
+      await changePassword({ current_password: pwCurrent, new_password: pwNew }, token!);
+      setPwCurrent("");
+      setPwNew("");
+      addToast("success", "Password updated");
+    } catch {
+      addToast("error", "Failed to change password (wrong current password?)");
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  // ── Admin users ────────────────────────────────────────────────────────
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUser.username || !newUser.password) { addToast("error", "Username and password required"); return; }
+    try {
+      await adminCreateUser(newUser, token!);
+      const updated = await adminListUsers(token!);
+      setUsers(updated);
+      setNewUser({ username: "", password: "" });
+      addToast("success", "User created");
+    } catch {
+      addToast("error", "Failed to create user");
+    }
+  };
+
+  const handleDeleteUser = async (id: number, username: string) => {
+    if (!window.confirm(`Delete user "${username}"?`)) return;
+    try {
+      await adminDeleteUser(id, token!);
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+      addToast("success", "User deleted");
+    } catch {
+      addToast("error", "Failed to delete user");
     }
   };
 
@@ -550,6 +613,14 @@ export default function AdminPage() {
               <TabsTrigger value="posts" className="gap-1.5 text-xs">
                 <BookOpen className="w-3.5 h-3.5" />
                 Blog Posts
+              </TabsTrigger>
+              <TabsTrigger value="users" className="gap-1.5 text-xs">
+                <Users className="w-3.5 h-3.5" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-1.5 text-xs">
+                <Settings className="w-3.5 h-3.5" />
+                Settings
               </TabsTrigger>
             </TabsList>
 
@@ -1082,15 +1153,19 @@ export default function AdminPage() {
                           required
                         />
                       </div>
+                      <FormField
+                        label="Cover Image URL"
+                        value={postForm.cover_image}
+                        onChange={(v) => setPostForm((p) => ({ ...p, cover_image: v }))}
+                        placeholder="https://... or /uploads/..."
+                      />
                       <div className="space-y-1.5">
                         <Label className="text-xs text-muted-foreground">Content (Markdown)</Label>
-                        <Textarea
+                        <MDEditor
                           value={postForm.content_md}
-                          onChange={(e) =>
-                            setPostForm((p) => ({ ...p, content_md: e.target.value }))
-                          }
-                          rows={8}
-                          className="text-sm font-mono bg-secondary/60"
+                          onChange={(val) => setPostForm((p) => ({ ...p, content_md: val || "" }))}
+                          height={400}
+                          preview="live"
                         />
                       </div>
                       <Button type="submit" size="sm" className="text-xs gap-1">
@@ -1172,20 +1247,27 @@ export default function AdminPage() {
                                         }
                                       />
                                     </div>
+                                    <FormField
+                                        label="Cover Image URL"
+                                        value={postForm.cover_image}
+                                        onChange={(v) =>
+                                          setPostForm((p) => ({ ...p, cover_image: v }))
+                                        }
+                                      />
                                     <div className="space-y-1.5">
                                       <Label className="text-xs text-muted-foreground">
                                         Content (Markdown)
                                       </Label>
-                                      <Textarea
+                                      <MDEditor
                                         value={postForm.content_md}
-                                        onChange={(e) =>
+                                        onChange={(val) =>
                                           setPostForm((p) => ({
                                             ...p,
-                                            content_md: e.target.value,
+                                            content_md: val || "",
                                           }))
                                         }
-                                        rows={6}
-                                        className="text-sm font-mono bg-secondary/60"
+                                        height={300}
+                                        preview="live"
                                       />
                                     </div>
                                     <div className="flex gap-2">
@@ -1237,6 +1319,7 @@ export default function AdminPage() {
                                         title: post.title,
                                         slug: post.slug,
                                         content_md: post.content_md,
+                                        cover_image: post.cover_image || "",
                                       });
                                     }}
                                   >
@@ -1268,6 +1351,121 @@ export default function AdminPage() {
                 </Card>
               </div>
             </TabsContent>
+
+            {/* ─── USERS TAB ──────────────────────────────────────────── */}
+            <TabsContent value="users">
+              <div className="space-y-6">
+                <Card className="bg-card/60 backdrop-blur-xl border border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-primary" />
+                      New User
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleCreateUser} className="flex items-end gap-3 flex-wrap">
+                      <FormField
+                        label="Username"
+                        value={newUser.username}
+                        onChange={(v) => setNewUser((p) => ({ ...p, username: v }))}
+                        required
+                        className="flex-1 min-w-[180px]"
+                      />
+                      <FormField
+                        label="Password"
+                        value={newUser.password}
+                        onChange={(v) => setNewUser((p) => ({ ...p, password: v }))}
+                        required
+                        className="flex-1 min-w-[180px]"
+                      />
+                      <Button type="submit" size="sm" className="text-xs gap-1">
+                        <Plus className="w-3 h-3" />
+                        Create
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-card/60 backdrop-blur-xl border border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-semibold">
+                      All Users ({users.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-border/40">
+                          <TableHead className="text-xs">ID</TableHead>
+                          <TableHead className="text-xs">Username</TableHead>
+                          <TableHead className="text-xs text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((u) => (
+                          <TableRow key={u.id} className="border-border/40">
+                            <TableCell className="text-xs font-mono text-muted-foreground">{u.id}</TableCell>
+                            <TableCell className="text-sm font-medium">{u.username}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                onClick={() => handleDeleteUser(u.id, u.username)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {users.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={3} className="text-center text-xs text-muted-foreground py-8">
+                              No users found.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* ─── SETTINGS TAB ──────────────────────────────────────── */}
+            <TabsContent value="settings">
+              <Card className="bg-card/60 backdrop-blur-xl border border-white/10 max-w-lg">
+                <CardHeader>
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-primary" />
+                    Change Password
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Update your admin account password.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleChangePassword} className="space-y-4">
+                    <FormField
+                      label="Current Password"
+                      value={pwCurrent}
+                      onChange={setPwCurrent}
+                      required
+                    />
+                    <FormField
+                      label="New Password"
+                      value={pwNew}
+                      onChange={setPwNew}
+                      required
+                    />
+                    <Button type="submit" size="sm" disabled={pwLoading} className="text-xs gap-1">
+                      {pwLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Lock className="w-3 h-3" />}
+                      {pwLoading ? "Updating..." : "Update Password"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         )}
       </main>
@@ -1289,6 +1487,7 @@ function FormField({
   type = "text",
   required = false,
   className = "",
+  placeholder = "",
 }: {
   label: string;
   value: string;
@@ -1296,6 +1495,7 @@ function FormField({
   type?: string;
   required?: boolean;
   className?: string;
+  placeholder?: string;
 }) {
   return (
     <div className={`space-y-1.5 ${className}`}>
@@ -1305,6 +1505,7 @@ function FormField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
+        placeholder={placeholder}
         className="text-sm bg-secondary/60"
       />
     </div>

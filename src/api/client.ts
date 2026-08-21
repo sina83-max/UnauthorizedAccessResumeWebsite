@@ -155,6 +155,39 @@ export function deletePost(id: number, token: string) {
   return adminFetch(`/blog/posts/${id}`, token, { method: "DELETE" });
 }
 
+// --- Admin Users ---
+
+export function adminListUsers(token: string): Promise<{ id: number; username: string }[]> {
+  return adminFetch("/users", token);
+}
+
+export function adminCreateUser(data: { username: string; password: string }, token: string) {
+  return adminFetch("/users", token, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function adminDeleteUser(id: number, token: string) {
+  return adminFetch(`/users/${id}`, token, { method: "DELETE" });
+}
+
+// --- Change Password ---
+
+export function changePassword(data: { current_password: string; new_password: string }, token: string) {
+  return adminFetch("/change-password", token, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function adminChangePasswordByID(id: number, new_password: string, token: string) {
+  return adminFetch(`/users/${id}/change-password`, token, {
+    method: "POST",
+    body: JSON.stringify({ new_password }),
+  });
+}
+
 export async function uploadFile(
   file: File,
   token: string

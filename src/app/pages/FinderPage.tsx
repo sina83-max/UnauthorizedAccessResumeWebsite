@@ -1133,6 +1133,15 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                 {/* 3. MARKDOWN VIEW (projects.md / posts) */}
                 {quickLookFile.type === 'markdown' && (
                   <div className="text-xs leading-relaxed space-y-4">
+                    {quickLookFile.coverImage && (
+                      <div className="w-full aspect-[16/9] rounded-xl overflow-hidden bg-secondary/50 -mx-6 sm:-mx-0 -mt-6 sm:-mt-0">
+                        <img
+                          src={quickLookFile.coverImage}
+                          alt={quickLookFile.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     {quickLookFile.category && (
                       <div className="mb-4 p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
                         <span className="font-semibold text-primary">Blog Post Article</span>
@@ -1240,6 +1249,15 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
             {/* Reading View Article Content */}
             <div className="flex-1 overflow-y-auto p-6 sm:p-12 max-w-3xl mx-auto w-full">
               <article className="space-y-6">
+                {readingPost.coverImage && (
+                  <div className="w-full aspect-[16/9] rounded-xl overflow-hidden bg-secondary/50">
+                    <img
+                      src={readingPost.coverImage}
+                      alt={readingPost.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <div className="border-b border-border/60 pb-6">
                   <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
                     {readingPost.category || 'Article'}
