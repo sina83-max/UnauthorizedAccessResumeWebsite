@@ -56,14 +56,48 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           script: |
-            mkdir -p /var/www/portfolio
+            # Install PostgreSQL if not present
+            if ! command -v psql &> /dev/null; then
+              apt-get update && apt-get install -y postgresql postgresql-client
+              systemctl enable postgresql
+              systemctl start postgresql
+            fi
+
+            # Create database and user if they don't exist
+            su - postgres -c "psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='sina'\" | grep -q 1" || \
+              su - postgres -c "psql -c \"CREATE USER sina WITH PASSWORD 'sina';\""
+            su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname='portfolio'\" | grep -q 1" || \
+              su - postgres -c "psql -c \"CREATE DATABASE portfolio OWNER sina;\""
+            su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE portfolio TO sina;\""
+
+            # Setup app directory
+            mkdir -p /var/www/portfolio/uploads
             cd /var/www/portfolio
             chmod +x portfolio-api
-            pkill -f portfolio-api || true
+
+            # Stop old process using PID file approach
+            if [ -f portfolio.pid ]; then
+              kill $(cat portfolio.pid) 2>/dev/null || true
+              rm -f portfolio.pid
+            fi
+
+            # Write .env file
             cat > .env << 'ENVEOF'
-            DB_URL=postgres://sina@localhost:5432/portfolio?sslmode=disable
+            DB_URL=postgres://sina:sina@localhost:5432/portfolio?sslmode=disable
             JWT_SECRET=dev-secret-change-in-production
             PORT=8080
             UPLOAD_DIR=uploads
             ENVEOF
+
+            # Start the binary
             nohup ./portfolio-api > /var/log/portfolio.log 2>&1 &
+            echo $! > portfolio.pid
+
+            # Wait and verify
+            sleep 2
+            if kill -0 $(cat portfolio.pid) 2>/dev/null; then
+              echo "portfolio-api started successfully (PID: $(cat portfolio.pid))"
+            else
+              echo "Failed to start portfolio-api. Check /var/log/portfolio.log"
+              cat /var/log/portfolio.log
+            fi
