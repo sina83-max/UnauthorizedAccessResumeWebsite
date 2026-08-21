@@ -35,9 +35,20 @@ jobs:
       - name: Build Go Binary (embeds frontend)
         run: |
           cd backend
-          go build -o portfolio-api .
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o portfolio-api .
 
-      - name: Deploy to VPS via SSH (Password)
+      - name: Upload binary to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          source: "backend/portfolio-api"
+          target: "/var/www/portfolio"
+          strip_components: 1
+
+      - name: Setup and restart on VPS
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -47,7 +58,12 @@ jobs:
           script: |
             mkdir -p /var/www/portfolio
             cd /var/www/portfolio
-            rm -f portfolio-api
-            scp ./portfolio-api .
             chmod +x portfolio-api
+            pkill -f portfolio-api || true
+            cat > .env << 'ENVEOF'
+            DB_URL=postgres://sina@localhost:5432/portfolio?sslmode=disable
+            JWT_SECRET=dev-secret-change-in-production
+            PORT=8080
+            UPLOAD_DIR=uploads
+            ENVEOF
             nohup ./portfolio-api > /var/log/portfolio.log 2>&1 &
