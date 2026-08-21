@@ -77,7 +77,26 @@ import {
   togglePostStatus,
 } from "@/api/client";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import {
+  ClassicEditor,
+  Bold,
+  Italic,
+  Link,
+  List,
+  ListProperties,
+  BlockQuote,
+  Table as CkTable,
+  TableToolbar,
+  Image,
+  ImageUpload,
+  PasteFromOffice,
+  AutoLink,
+  Heading,
+  Paragraph,
+  Undo,
+  GeneralHtmlSupport,
+} from "ckeditor5";
+import "ckeditor5/ckeditor5.css";
 import type {
   ResumeSection,
   Project,
@@ -1205,7 +1224,7 @@ export default function AdminPage() {
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs text-muted-foreground">Content (HTML)</Label>
-                        <div className="rounded-xl border border-border/60 overflow-hidden">
+                        <div className="rounded-xl border border-border/60 overflow-hidden" style={{ minHeight: 400 }}>
                           <CKEditor
                             editor={ClassicEditor}
                             data={postForm.content_html}
@@ -1213,6 +1232,24 @@ export default function AdminPage() {
                               setPostForm((p) => ({ ...p, content_html: editor.getData() }));
                             }}
                             config={{
+                              plugins: [
+                                Heading,
+                                Bold,
+                                Italic,
+                                Link,
+                                List,
+                                ListProperties,
+                                BlockQuote,
+                                CkTable,
+                                TableToolbar,
+                                Image,
+                                ImageUpload,
+                                PasteFromOffice,
+                                AutoLink,
+                                Undo,
+                                Paragraph,
+                                GeneralHtmlSupport,
+                              ],
                               toolbar: {
                                 items: [
                                   "heading",
@@ -1229,16 +1266,9 @@ export default function AdminPage() {
                                   "imageUpload",
                                   "blockQuote",
                                   "insertTable",
-                                  "mediaEmbed",
                                   "|",
                                   "undo",
                                   "redo",
-                                  "|",
-                                  "fontSize",
-                                  "fontColor",
-                                  "fontBackgroundColor",
-                                  "alignment",
-                                  "htmlEmbed",
                                 ],
                                 shouldNotGroupWhenFull: true,
                               },
@@ -1247,7 +1277,6 @@ export default function AdminPage() {
                                   types: ["jpeg", "png", "gif", "webp", "bmp"],
                                 },
                               },
-                              language: "en",
                             }}
                           />
                         </div>
@@ -1342,7 +1371,7 @@ export default function AdminPage() {
                                       <Label className="text-xs text-muted-foreground">
                                         Content (HTML)
                                       </Label>
-                                      <div className="rounded-xl border border-border/60 overflow-hidden">
+                                      <div className="rounded-xl border border-border/60 overflow-hidden" style={{ minHeight: 300 }}>
                                         <CKEditor
                                           editor={ClassicEditor}
                                           data={postForm.content_html}
@@ -1353,20 +1382,24 @@ export default function AdminPage() {
                                             }))
                                           }
                                           config={{
+                                            plugins: [
+                                              Heading, Bold, Italic, Link,
+                                              List, ListProperties, BlockQuote,
+                                              CkTable, TableToolbar, Image, ImageUpload,
+                                              PasteFromOffice, AutoLink, Undo, Paragraph,
+                                              GeneralHtmlSupport,
+                                            ],
                                             toolbar: {
                                               items: [
                                                 "heading", "|", "bold", "italic", "link",
                                                 "bulletedList", "numberedList", "|",
                                                 "outdent", "indent", "|",
-                                                "imageUpload", "blockQuote", "insertTable", "mediaEmbed",
-                                                "|", "undo", "redo", "|",
-                                                "fontSize", "fontColor", "fontBackgroundColor",
-                                                "alignment", "htmlEmbed",
+                                                "imageUpload", "blockQuote", "insertTable",
+                                                "|", "undo", "redo",
                                               ],
                                               shouldNotGroupWhenFull: true,
                                             },
                                             image: { upload: { types: ["jpeg", "png", "gif", "webp", "bmp"] } },
-                                            language: "en",
                                           }}
                                         />
                                       </div>
@@ -1403,16 +1436,16 @@ export default function AdminPage() {
                                 {catName}
                               </TableCell>
                               <TableCell>
-                                <button
-                                  onClick={() => handleToggleStatus(post.id)}
-                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors ${
-                                    post.status === "published"
-                                      ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/25"
-                                      : "bg-amber-500/15 border-amber-500/30 text-amber-500 hover:bg-amber-500/25"
-                                  }`}
-                                >
-                                  {post.status === "published" ? "Published" : "Draft"}
-                                </button>
+                                  <button
+                                    onClick={() => handleToggleStatus(post.id)}
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+                                      (post.status || "draft") === "published"
+                                        ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/25"
+                                        : "bg-amber-500/15 border-amber-500/30 text-amber-500 hover:bg-amber-500/25"
+                                    }`}
+                                  >
+                                    {(post.status || "draft") === "published" ? "Published" : "Draft"}
+                                  </button>
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex gap-1 justify-end">

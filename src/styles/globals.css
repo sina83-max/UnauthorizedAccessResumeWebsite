@@ -3,6 +3,7 @@
   background-color: hsl(222.2 84% 4.9% / 0.6) !important;
   color: hsl(210 40% 98%) !important;
   border-color: hsl(217.2 32.6% 17.5%) !important;
+  min-height: 300px;
 }
 
 .dark .ck-editor__toolbar {
@@ -40,6 +41,10 @@
 
 .dark .ck-editor__editable .ck-placeholder::before {
   color: hsl(215 20.2% 45%) !important;
+}
+
+.dark .ck-editor__main {
+  background: transparent !important;
 }
 
 /* HTML blog post rendering in reading view & quick look */

@@ -60,5 +60,10 @@ func Migrate() error {
 	}
 
 	log.Println("✓ Database migration completed")
+
+	// Backfill empty status on existing posts (AutoMigrate adds the column
+	// but doesn't set defaults for rows that already exist).
+	DB.Model(&models.BlogPost{}).Where("status = '' OR status IS NULL").Update("status", "draft")
+
 	return nil
 }
