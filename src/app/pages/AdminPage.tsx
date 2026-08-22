@@ -95,6 +95,7 @@ import {
   Paragraph,
   Undo,
   GeneralHtmlSupport,
+  Essentials,
 } from "ckeditor5";
 import "ckeditor5/ckeditor5.css";
 import type {
@@ -1232,7 +1233,9 @@ export default function AdminPage() {
                               setPostForm((p) => ({ ...p, content_html: editor.getData() }));
                             }}
                             config={{
+                              licenseKey: 'GPL',
                               plugins: [
+                                Essentials,
                                 Heading,
                                 Bold,
                                 Italic,
@@ -1382,8 +1385,9 @@ export default function AdminPage() {
                                             }))
                                           }
                                           config={{
+                                            licenseKey: 'GPL',
                                             plugins: [
-                                              Heading, Bold, Italic, Link,
+                                              Essentials, Heading, Bold, Italic, Link,
                                               List, ListProperties, BlockQuote,
                                               CkTable, TableToolbar, Image, ImageUpload,
                                               PasteFromOffice, AutoLink, Undo, Paragraph,

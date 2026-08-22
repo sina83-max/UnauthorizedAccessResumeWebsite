@@ -1,6 +1,7 @@
 packages:
   - '.'
 allowBuilds:
+  '@ckeditor/vite-plugin-ckeditor5': true
   '@tailwindcss/oxide': true
   esbuild: true
 supportedArchitectures:

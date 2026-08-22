@@ -793,7 +793,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                   ) : viewMode === 'icon' ? (
                     /* ICON VIEW */
                     <div
-                      className="flex-1 overflow-y-auto p-6 grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] justify-items-center items-start gap-y-1 gap-x-4 align-content-start"
+                      className="flex-1 overflow-y-auto p-6 grid grid-cols-[repeat(auto-fill,100px)] justify-items-center items-start align-content-start gap-y-2 gap-x-0"
                       onClick={() => setSelectedFile(null)}
                     >
                       {displayedFiles.map((file) => {
@@ -809,7 +809,7 @@ export function FinderPage({ isDarkMode, onToggleDark }: { isDarkMode: boolean; 
                               e.stopPropagation();
                               handleDoubleClickNode(file);
                             }}
-                            className={`group flex flex-col items-center justify-center p-3 rounded-2xl cursor-pointer transition-all border ${
+                            className={`group flex flex-col items-center pt-3 pb-2 px-2 rounded-2xl cursor-pointer transition-all border ${
                               isSelected
                                 ? 'bg-primary/15 border-primary/40 ring-2 ring-primary/30 shadow-md'
                                 : 'border-transparent hover:bg-secondary/50 hover:border-border/30'
